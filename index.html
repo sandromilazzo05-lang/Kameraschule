@@ -1,0 +1,1574 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kameraschule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: Kamerasucher links (gross), Regiepult rechts mit Auftrag, Auslöser und Album. Auf dem Handy untereinander. Bewusst nur ein dunkles Thema: ein Kameragehäuse. */
+:root {
+  --gehaeuse: #17181b;
+  --pult: #212328;
+  --rille: #34373e;
+  --text: #ece9e3;
+  --leise: #a19e96;
+  --signal: #f2a93b;
+  --rec: #e0483a;
+  --gut: #72c48d;
+  --schleier: rgba(10, 10, 12, .84);
+  --klappe-hell: #f1efe8;
+  --klappe-dunkel: #1b1b1d;
+  --auf-signal: #1b1b1b;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--gehaeuse);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-block: 18px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+h1 span { color: var(--signal); }
+.untertitel { color: var(--leise); font-size: .95rem; }
+.untertitel b { color: var(--text); }
+.buehne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) { .buehne { grid-template-columns: minmax(0, 1fr); } }
+.links { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sucher {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--rille);
+}
+.sucher canvas { display: block; width: 100%; height: 100%; }
+.overlay { position: absolute; inset: 0; pointer-events: none; }
+.drittel {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, transparent calc(33.33% - .5px), rgba(255,255,255,.28) calc(33.33% - .5px), rgba(255,255,255,.28) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.28) calc(66.66% - .5px), rgba(255,255,255,.28) calc(66.66% + .5px), transparent calc(66.66% + .5px)),
+    linear-gradient(to bottom, transparent calc(33.33% - .5px), rgba(255,255,255,.28) calc(33.33% - .5px), rgba(255,255,255,.28) calc(33.33% + .5px), transparent calc(33.33% + .5px), transparent calc(66.66% - .5px), rgba(255,255,255,.28) calc(66.66% - .5px), rgba(255,255,255,.28) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+}
+.ecke { position: absolute; width: 28px; height: 28px; border-color: rgba(255,255,255,.85); border-style: solid; border-width: 0; }
+.ecke.ol { top: 14px; left: 14px; border-top-width: 2px; border-left-width: 2px; }
+.ecke.or { top: 14px; right: 14px; border-top-width: 2px; border-right-width: 2px; }
+.ecke.ul { bottom: 14px; left: 14px; border-bottom-width: 2px; border-left-width: 2px; }
+.ecke.ur { bottom: 14px; right: 14px; border-bottom-width: 2px; border-right-width: 2px; }
+.rec {
+  position: absolute; top: 18px; left: 52px;
+  font-family: var(--mono); font-size: .8rem; color: #fff;
+  display: flex; align-items: center; gap: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.rec i { width: 9px; height: 9px; border-radius: 50%; background: var(--rec); display: inline-block; animation: blink 1.4s infinite; }
+.kap-badge {
+  position: absolute; top: 18px; right: 52px;
+  font-family: var(--mono); font-size: .75rem; color: #fff; letter-spacing: .06em;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7);
+}
+@keyframes blink { 50% { opacity: .2; } }
+.werte {
+  position: absolute; bottom: 18px; left: 52px; right: 52px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px;
+  font-family: var(--mono); font-size: .8rem; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7);
+  font-variant-numeric: tabular-nums;
+}
+.blitz { position: absolute; inset: 0; background: #fff; opacity: 0; transition: opacity .35s ease-out; }
+.blitz.an { opacity: .85; transition: none; }
+
+.steuerung { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .steuerung { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gruppe {
+  background: var(--pult);
+  border: 1px solid var(--rille);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+.gruppe .etikett { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--leise); display: flex; justify-content: space-between; gap: 6px; }
+.gruppe .schloss { color: var(--signal); letter-spacing: .04em; text-transform: none; font-size: .72rem; }
+.gruppe .tasten { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gruppe.fahren .tasten { grid-template-columns: repeat(3, 1fr); }
+.gruppe .kbd { font-family: var(--mono); font-size: .7rem; color: var(--leise); }
+.gruppe.gesperrt .tasten, .gruppe.gesperrt .kbd { opacity: .35; }
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--text);
+  background: #2b2e34;
+  border: 1px solid var(--rille);
+  border-radius: 5px;
+  padding: 8px 6px;
+  font-weight: 700;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button:hover:not(:disabled) { background: #33363d; }
+button:active:not(:disabled), button.gedrueckt { background: var(--signal); color: var(--auf-signal); border-color: var(--signal); }
+button:disabled { cursor: not-allowed; }
+button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.leer { visibility: hidden; }
+
+.pult { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.karte {
+  background: var(--pult);
+  border: 1px solid var(--rille);
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  min-width: 0;
+}
+.karte h2, .blatt h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.7rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  text-wrap: balance;
+}
+.auftragnr { font-family: var(--mono); font-size: .78rem; color: var(--signal); letter-spacing: .06em; }
+.auftragtext { margin: 0; }
+.ausloeser {
+  font-family: var(--display);
+  font-size: 1.3rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: var(--rec);
+  border-color: var(--rec);
+  color: #fff;
+  padding: 12px;
+}
+.ausloeser:hover:not(:disabled) { background: #ec5b4d; }
+.ausloeser:disabled { opacity: .5; }
+.rueckmeldung { min-height: 3em; margin: 0; }
+.rueckmeldung.gut { color: var(--gut); font-weight: 700; }
+.rueckmeldung.fehler { color: var(--signal); }
+.bild-war { font-family: var(--mono); font-size: .78rem; color: var(--leise); }
+.fortschritt { display: flex; gap: 4px; align-items: center; }
+.fortschritt span { flex: 1; height: 6px; border-radius: 3px; background: var(--rille); }
+.fortschritt span.fertig { background: var(--gut); }
+.fortschritt span.jetzt { background: var(--signal); }
+.fortschritt span.daneben { background: var(--rec); }
+.fortschritt span.schnitt { flex: 0 0 2px; height: 14px; background: var(--leise); border-radius: 1px; margin-inline: 3px; }
+.zeile { display: flex; flex-wrap: wrap; gap: 8px; }
+.zeile button { flex: 1 1 auto; }
+.punkte { font-family: var(--mono); font-size: .85rem; color: var(--text); font-variant-numeric: tabular-nums; }
+.punkte b { color: var(--signal); }
+
+.frage { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rille); padding-top: 10px; }
+.frage p { margin: 0; }
+.frage .antworten { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.frage .antworten button.richtig { background: var(--gut); border-color: var(--gut); color: var(--auf-signal); }
+.frage .antworten button.falsch { border-color: var(--rec); color: var(--rec); }
+
+details { font-size: .92rem; }
+summary { cursor: pointer; font-weight: 700; }
+.spick h3 { margin: 12px 0 2px; font-family: var(--mono); font-size: .75rem; letter-spacing: .08em; color: var(--leise); font-weight: 500; text-transform: uppercase; }
+dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; }
+dt { font-weight: 700; color: var(--signal); }
+dd { margin: 0; color: var(--text); }
+.album { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.album figure { margin: 0; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.album img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 3px; border: 1px solid var(--rille); }
+.album figcaption { font-size: .72rem; color: var(--leise); line-height: 1.2; overflow-wrap: anywhere; }
+.album-leer { color: var(--leise); font-size: .9rem; margin: 0; }
+.etikett-gross { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--leise); }
+.tipp { font-size: .9rem; color: var(--leise); margin: 0; }
+.tipp b { color: var(--text); }
+.klein { font-size: .85rem; padding: 6px 10px; align-self: flex-start; }
+
+/* Vorhang: Kapitelklappe und Abschlussfenster */
+.vorhang {
+  position: fixed; inset: 0; z-index: 20;
+  background: var(--schleier);
+  display: flex; align-items: flex-start; justify-content: center;
+  overflow-y: auto;
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.blatt {
+  width: 100%; max-width: 560px; margin: auto 0;
+  background: var(--pult);
+  border: 1px solid var(--rille);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 12px;
+  min-width: 0;
+}
+.blatt.breit { max-width: 860px; }
+.blatt p { margin: 0; }
+.merksatz {
+  font-family: var(--display); font-weight: 600; font-size: 1.6rem; line-height: 1.1;
+  color: var(--signal);
+}
+.vergleich { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.vergleich div { border: 1px solid var(--rille); border-radius: 5px; padding: 8px 10px; font-size: .9rem; color: var(--leise); }
+.vergleich div b { display: block; color: var(--text); }
+.vergleich div.aktiv { border-color: var(--signal); }
+.vergleich div.aktiv b { color: var(--signal); }
+.figurinfo { color: var(--leise); }
+.figurinfo b { color: var(--text); }
+
+.klappe { position: relative; height: 92px; margin-bottom: 4px; }
+.klappe-oben {
+  position: absolute; left: 0; right: 0; top: 0; height: 26px;
+  background: repeating-linear-gradient(-55deg, var(--klappe-hell) 0 22px, var(--klappe-dunkel) 22px 44px);
+  border-radius: 3px;
+  transform-origin: 6px 26px;
+  transform: rotate(-14deg);
+  transition: transform .22s cubic-bezier(.6, 0, .9, .4);
+}
+.klappe.zu .klappe-oben { transform: rotate(0deg); }
+.klappe-unten {
+  position: absolute; left: 0; right: 0; top: 30px; bottom: 0;
+  background: var(--klappe-dunkel);
+  border: 2px solid var(--klappe-hell);
+  border-radius: 3px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  font-family: var(--mono); font-size: .78rem; color: var(--klappe-hell);
+  text-align: center; letter-spacing: .06em;
+}
+.klappe-unten span + span { border-left: 1px solid rgba(241,239,232,.35); }
+
+.ende-raster { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .ende-raster { grid-template-columns: minmax(0, 1fr); } }
+.kontakt { width: 100%; border-radius: 4px; border: 1px solid var(--rille); background: #000; aspect-ratio: 16 / 11; object-fit: contain; }
+.feld { display: flex; flex-direction: column; gap: 4px; }
+.feld label { font-size: .85rem; color: var(--leise); }
+.feld input {
+  font: inherit; color: var(--text); background: var(--gehaeuse);
+  border: 1px solid var(--rille); border-radius: 5px; padding: 8px 10px; width: 100%;
+}
+.haupt { background: var(--signal); border-color: var(--signal); color: var(--auf-signal); padding: 10px 12px; }
+.haupt:hover:not(:disabled) { background: #f6b955; }
+.status { min-height: 1.5em; font-size: .9rem; color: var(--leise); }
+.status.gut { color: var(--gut); }
+.status.fehler { color: var(--signal); }
+.einzeln { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 10px; }
+.einzeln button { display: flex; flex-direction: column; gap: 4px; padding: 6px; font-weight: 500; font-size: .75rem; text-align: left; }
+.einzeln img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 2px; }
+.tuer { border: 1px dashed var(--rille); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.tuer.offen { border-style: solid; border-color: var(--signal); }
+.tuer p { color: var(--leise); }
+.tuer.offen p { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rec i { animation: none; }
+  .blitz, .klappe-oben { transition: none; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>Kamera<span>schule</span></h1>
+    <span class="untertitel" id="figurZeile">Du bist heute die Kamera.</span>
+  </header>
+
+  <div class="buehne">
+    <div class="links">
+      <div class="sucher" id="sucher">
+        <canvas id="canvas" aria-label="Blick durch die Kamera auf den Schulhausplatz"></canvas>
+        <div class="overlay">
+          <div class="drittel"></div>
+          <div class="ecke ol"></div><div class="ecke or"></div><div class="ecke ul"></div><div class="ecke ur"></div>
+          <div class="rec"><i></i>REC</div>
+          <div class="kap-badge" id="kapBadge">KAPITEL 1</div>
+          <div class="werte">
+            <span id="w-hoehe">Höhe 1.6 m</span>
+            <span id="w-neigung">Neigung 0°</span>
+          </div>
+          <div class="blitz" id="blitz"></div>
+        </div>
+      </div>
+
+      <div class="steuerung">
+        <div class="gruppe fahren" id="g-fahren">
+          <span class="etikett">Fahren</span>
+          <div class="tasten">
+            <span class="leer"></span>
+            <button type="button" data-key="vor" aria-label="Vorwärts fahren">▲</button>
+            <span class="leer"></span>
+            <button type="button" data-key="links" aria-label="Nach links fahren">◀</button>
+            <button type="button" data-key="zurueck" aria-label="Rückwärts fahren">▼</button>
+            <button type="button" data-key="rechts" aria-label="Nach rechts fahren">▶</button>
+          </div>
+          <span class="kbd">W A S D</span>
+        </div>
+        <div class="gruppe" id="g-hoehe">
+          <span class="etikett">Höhe <span class="schloss" id="hoeheSchloss">ab Kapitel 2</span></span>
+          <div class="tasten">
+            <button type="button" data-key="hoch">Hoch</button>
+            <button type="button" data-key="runter">Tief</button>
+          </div>
+          <span class="kbd">E / Q</span>
+        </div>
+        <div class="gruppe" id="g-schwenk">
+          <span class="etikett">Schwenken</span>
+          <div class="tasten">
+            <button type="button" data-key="drehL" aria-label="Nach links schwenken">↺</button>
+            <button type="button" data-key="drehR" aria-label="Nach rechts schwenken">↻</button>
+          </div>
+          <span class="kbd">Pfeil ← →</span>
+        </div>
+        <div class="gruppe" id="g-neigen">
+          <span class="etikett">Neigen <span class="schloss" id="neigenSchloss">nur leicht</span></span>
+          <div class="tasten">
+            <button type="button" data-key="neigHoch">Nach oben</button>
+            <button type="button" data-key="neigRunter">Nach unten</button>
+          </div>
+          <span class="kbd">Pfeil ↑ ↓</span>
+        </div>
+      </div>
+      <p class="tipp"><b>Tipp aus dem Filmteam:</b> Diese Kamera kann nicht zoomen. Wie beim echten Dreh gilt: lieber näher hingehen als zoomen. Die Leertaste ist der Auslöser.</p>
+    </div>
+
+    <aside class="pult">
+      <div class="karte" aria-live="polite">
+        <div class="fortschritt" id="fortschritt"></div>
+        <span class="auftragnr" id="auftragnr">AUFTRAG 1 VON 12</span>
+        <h2 id="auftragtitel">Totale</h2>
+        <p class="auftragtext" id="auftragtext"></p>
+        <span class="punkte" id="punkte" hidden></span>
+        <button type="button" class="ausloeser" id="ausloeser">Auslösen</button>
+        <div class="frage" id="frage" hidden>
+          <p id="frageText"></p>
+          <div class="antworten" id="antworten"></div>
+          <p id="frageRueck" class="rueckmeldung" hidden></p>
+          <button type="button" class="haupt" id="frageWeiter" hidden>Weiter</button>
+        </div>
+        <p class="rueckmeldung" id="rueckmeldung">Fahre mit der Kamera los. Wenn das Bild stimmt, drücke den Auslöser.</p>
+        <span class="bild-war" id="bildwar"></span>
+        <div class="zeile" id="zeileKnoepfe">
+          <button type="button" class="klein" id="reset">Kamera an den Start</button>
+          <button type="button" class="klein" id="skip" hidden>Überspringen</button>
+        </div>
+        <div class="zeile" id="zeileEnde" hidden>
+          <button type="button" class="haupt" id="neueChallenge" hidden>Neue Challenge</button>
+          <button type="button" id="albumOeffnen">Album öffnen</button>
+        </div>
+      </div>
+
+      <div class="karte">
+        <details class="spick">
+          <summary>Spickzettel</summary>
+          <h3>Einstellungsgrössen · Wie nah bin ich?</h3>
+          <dl>
+            <dt>Totale</dt><dd>Person klein, die Umgebung zeigt, wo wir sind.</dd>
+            <dt>Halbtotale</dt><dd>Ganze Person von Kopf bis Fuss, mit etwas Umgebung.</dd>
+            <dt>Amerikanische</dt><dd>Vom Kopf bis zu den Knien.</dd>
+            <dt>Halbnahe</dt><dd>Vom Kopf bis zur Hüfte.</dd>
+            <dt>Nahe</dt><dd>Kopf und Oberkörper bis zur Brust.</dd>
+            <dt>Grosse</dt><dd>Das Gesicht füllt das Bild, es endet beim Hals.</dd>
+            <dt>Detail</dt><dd>Nur ein kleiner Ausschnitt: die Augen oder ein Gegenstand.</dd>
+          </dl>
+          <h3>Perspektiven · Von wo schaue ich?</h3>
+          <dl>
+            <dt>Vogel</dt><dd>Kamera hoch oben, steil nach unten.</dd>
+            <dt>Aufsicht</dt><dd>Kamera höher als der Kopf, nach unten.</dd>
+            <dt>Normalsicht</dt><dd>Kamera auf Augenhöhe, gerade.</dd>
+            <dt>Untersicht</dt><dd>Kamera tiefer als die Augen, leicht nach oben.</dd>
+            <dt>Frosch</dt><dd>Kamera fast am Boden, stark nach oben.</dd>
+          </dl>
+        </details>
+      </div>
+
+      <div class="karte">
+        <span class="etikett-gross">Dein Album</span>
+        <p class="album-leer" id="albumleer">Hier sammelst du jede gelungene Einstellung.</p>
+        <div class="album" id="album"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Kapitelklappe -->
+<div class="vorhang" id="kapitel" hidden role="dialog" aria-modal="true" aria-labelledby="kapTitel">
+  <div class="blatt">
+    <div class="klappe" id="klappe">
+      <div class="klappe-oben"></div>
+      <div class="klappe-unten"><span id="kapSzene">SZENE 1</span><span>KAMERASCHULE</span><span id="kapTake">TAKE 1</span></div>
+    </div>
+    <span class="auftragnr" id="kapNr">KAPITEL 1</span>
+    <h2 id="kapTitel">Einstellungsgrössen</h2>
+    <p class="merksatz" id="kapMerk">Wie nah bin ich?</p>
+    <div class="vergleich">
+      <div id="vglGroesse"><b>Einstellungsgrösse</b>Wie nah bin ich? Es geht um den Abstand.</div>
+      <div id="vglPersp"><b>Perspektive</b>Von wo schaue ich? Es geht um Höhe und Winkel.</div>
+    </div>
+    <p id="kapText"></p>
+    <p class="figurinfo" id="kapFigur"></p>
+    <button type="button" class="ausloeser" id="kapLos">Klappe und Action!</button>
+  </div>
+</div>
+
+<!-- Abschlussfenster mit Download und Challenge-Tür -->
+<div class="vorhang" id="ende" hidden role="dialog" aria-modal="true" aria-labelledby="endeTitel">
+  <div class="blatt breit">
+    <span class="auftragnr">ALLE 12 EINSTELLUNGEN IM KASTEN</span>
+    <h2 id="endeTitel">Kameraschule bestanden</h2>
+    <p>Lade jetzt dein Album herunter. Jedes Bild heisst wie seine Einstellung, zum Beispiel <b>01_Totale.png</b>. Der Kontaktabzug zeigt alle zwölf Bilder auf einem Blatt.</p>
+    <div class="ende-raster">
+      <img class="kontakt" id="kontaktVorschau" alt="Kontaktabzug mit allen zwölf Bildern">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="feld">
+          <label for="name">Dein Name für den Kontaktabzug</label>
+          <input id="name" type="text" maxlength="40" autocomplete="off" placeholder="z.B. Mia">
+        </div>
+        <button type="button" class="haupt" id="dlZip">Ganzes Album herunterladen (ZIP)</button>
+        <button type="button" id="dlKontakt">Nur Kontaktabzug (PNG)</button>
+        <p class="status" id="dlStatus" aria-live="polite"></p>
+        <div class="tuer" id="tuer">
+          <span class="auftragnr">BONUS · CHALLENGE</span>
+          <p id="tuerText">Gesperrt. Die Challenge öffnet sich, sobald du dein Album heruntergeladen hast.</p>
+          <button type="button" class="ausloeser" id="challengeStart" hidden>Challenge starten</button>
+        </div>
+      </div>
+    </div>
+    <details>
+      <summary>Einzelbilder herunterladen</summary>
+      <div class="einzeln" id="einzeln"></div>
+    </details>
+    <button type="button" class="klein" id="endeZu">Fenster schliessen</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var FOV = 50;
+  var TAN = Math.tan((FOV / 2) * Math.PI / 180);
+  var AUGENHOEHE = 1.65;
+  var SCHEITEL = 1.81;
+
+  /* ---------- Figuren: immer eine stehende Person mit einer Aktivität ---------- */
+  var FIGUREN = [
+    { typ: "ball", name: "Lena", aktion: "dribbelt einen Basketball", detail: "die Hand mit dem Ball",
+      farben: { hose: 0x2c3e5c, oberteil: 0xc9573c, haut: 0xe2b896, haare: 0x3b2a20 }, lang: true },
+    { typ: "apfel", name: "Noah", aktion: "isst einen Apfel", detail: "den Apfel",
+      farben: { hose: 0x3a3a3a, oberteil: 0x4c7a6a, haut: 0xc9946c, haare: 0x161212 }, lang: false },
+    { typ: "giessen", name: "Elif", aktion: "giesst eine Pflanze", detail: "die Giesskanne",
+      farben: { hose: 0x46506a, oberteil: 0xd8a93a, haut: 0xd9a77f, haare: 0x241914 }, lang: true },
+    { typ: "kiste", name: "Jonas", aktion: "öffnet eine geheimnisvolle Kiste", detail: "die Kiste",
+      farben: { hose: 0x2f3a33, oberteil: 0x7a5fa0, haut: 0xf0c8a6, haare: 0x8a5a2b }, lang: false }
+  ];
+  var FIGUR = FIGUREN[Math.floor(Math.random() * FIGUREN.length)];
+
+  /* ---------- Aufträge ---------- */
+  var AUFTRAEGE = [
+    { id: "totale", typ: "groesse", titel: "Totale",
+      text: "Zeige die Person klein in ihrer Umgebung. Man soll sehen, dass die Szene auf dem Schulhausplatz spielt.",
+      ziel: "Bei der Totalen ist die Person klein und die Umgebung gross." },
+    { id: "halbtotale", typ: "groesse", titel: "Halbtotale",
+      text: "Die ganze Person ist im Bild, von Kopf bis Fuss, mit etwas Umgebung rundherum.",
+      ziel: "Bei der Halbtotalen ist die ganze Person mit etwas Umgebung im Bild." },
+    { id: "amerikanisch", typ: "groesse", titel: "Amerikanische",
+      text: "Zeige die Person vom Kopf bis zu den Knien. So wurden früher die Cowboys im Western gefilmt.",
+      ziel: "Bei der Amerikanischen endet das Bild bei den Knien." },
+    { id: "halbnah", typ: "groesse", titel: "Halbnahe",
+      text: "Zeige die Person vom Kopf bis zur Hüfte. Jetzt sieht man gut, was sie mit den Händen macht.",
+      ziel: "Bei der Halbnahen endet das Bild bei der Hüfte." },
+    { id: "nah", typ: "groesse", titel: "Nahe",
+      text: "Zeige Kopf und Oberkörper bis zur Brust. Diese Einstellung braucht man oft, wenn jemand spricht.",
+      ziel: "Bei der Nahen endet das Bild bei der Brust." },
+    { id: "gross", typ: "groesse", titel: "Grosse",
+      text: "Grossaufnahme: Das Gesicht füllt das Bild, unten endet es beim Hals. Jetzt sieht man die Gefühle der Person.",
+      ziel: "Bei der Grossen endet das Bild beim Hals." },
+    { id: "detail", typ: "groesse", titel: "Detail",
+      text: "Zeige nur noch einen kleinen Ausschnitt, zum Beispiel " + FIGUR.detail + " oder die Augen.",
+      ziel: "Beim Detail siehst du nur noch einen kleinen Ausschnitt." },
+    { id: "normal", typ: "persp", titel: "Normalsicht",
+      text: "Die Kamera ist auf Augenhöhe der Person und schaut gerade aus. So sehen wir Menschen im Alltag." },
+    { id: "untersicht", typ: "persp", titel: "Untersicht",
+      text: "Halte die Kamera tiefer als die Augen der Person und neige sie leicht nach oben." },
+    { id: "frosch", typ: "persp", titel: "Froschperspektive",
+      text: "Geh mit der Kamera fast bis auf den Boden und neige sie stark nach oben.",
+      wirkung: { frage: "Wie wirkt die Person aus der Froschperspektive?",
+        antworten: [{ t: "Mächtig und stark", ok: true }, { t: "Klein und schwach", ok: false }],
+        erkl: "Von unten gefilmt wirkt eine Person grösser und mächtiger. Darum filmt man Heldinnen, Helden und Bösewichte oft so." } },
+    { id: "aufsicht", typ: "persp", titel: "Aufsicht",
+      text: "Halte die Kamera höher als den Kopf der Person und neige sie nach unten." },
+    { id: "vogel", typ: "persp", titel: "Vogelperspektive",
+      text: "Steig mit der Kamera hoch hinauf und schau steil nach unten, wie ein Vogel.",
+      wirkung: { frage: "Wie wirkt die Person aus der Vogelperspektive?",
+        antworten: [{ t: "Mächtig und stark", ok: false }, { t: "Klein und verloren", ok: true }],
+        erkl: "Von oben gefilmt wirkt eine Person klein, einsam oder hilflos." } }
+  ];
+  AUFTRAEGE.forEach(function (a, i) { a.nr = i + 1; a.datei = (i < 9 ? "0" : "") + (i + 1) + "_" + a.titel + ".png"; });
+  var ANZAHL_K1 = 7;
+
+  var NAMEN = {
+    zuweit: "viel zu weit weg", totale: "Totale", halbtotale: "Halbtotale", amerikanisch: "Amerikanische",
+    halbnah: "Halbnahe", nah: "Nahe", gross: "Grosse", detail: "Detail",
+    normal: "Normalsicht", untersicht: "Untersicht", frosch: "Froschperspektive",
+    aufsicht: "Aufsicht", vogel: "Vogelperspektive", unklar: "keine klare Perspektive"
+  };
+  // Stufen von weit (0) bis nah (7); Zwischenwerte sind Lücken zwischen zwei Einstellungen
+  var STUFE = { zuweit: 0, totale: 1, halbtotale: 2, halbtotaleEng: 2.4, kopfAb: 2.4, unterschenkel: 2.5,
+    amerikanisch: 3, oberschenkel: 3.5, halbnah: 4, bauch: 4.5, nah: 5, schultern: 5.5, gross: 6, detail: 7 };
+
+  /* ---------- Szene ---------- */
+  var canvas = document.getElementById("canvas");
+  var sucher = document.getElementById("sucher");
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xb9cfe2);
+  scene.fog = new THREE.Fog(0xb9cfe2, 35, 95);
+
+  var camera = new THREE.PerspectiveCamera(FOV, 16 / 9, 0.01, 200);
+  camera.rotation.order = "YXZ";
+
+  scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x5a5550, 0.75));
+  var sonne = new THREE.DirectionalLight(0xfff2dd, 0.9);
+  sonne.position.set(8, 14, 10);
+  sonne.castShadow = true;
+  sonne.shadow.mapSize.set(2048, 2048);
+  sonne.shadow.camera.left = -20; sonne.shadow.camera.right = 20;
+  sonne.shadow.camera.top = 20; sonne.shadow.camera.bottom = -20;
+  scene.add(sonne);
+
+  function mat(farbe, leuchten) {
+    if (leuchten) return new THREE.MeshLambertMaterial({ color: farbe, emissive: leuchten, emissiveIntensity: 0.9 });
+    return new THREE.MeshLambertMaterial({ color: farbe });
+  }
+  function box(w, h, d, farbe, x, y, z, eltern, leuchten) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(farbe, leuchten));
+    m.position.set(x, y, z);
+    m.castShadow = true; m.receiveShadow = true;
+    (eltern || scene).add(m);
+    return m;
+  }
+
+  // Boden und Platz
+  var boden = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), mat(0x7d7f82));
+  boden.rotation.x = -Math.PI / 2; boden.receiveShadow = true; scene.add(boden);
+  function linie(w, d, x, z) {
+    var l = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat(0xf1efe8));
+    l.rotation.x = -Math.PI / 2; l.position.set(x, 0.005, z); scene.add(l);
+  }
+  linie(14, 0.08, 0, 4); linie(14, 0.08, 0, -6); linie(0.08, 10, -7, -1); linie(0.08, 10, 7, -1); linie(14, 0.08, 0, -1);
+  var kreis = new THREE.Mesh(new THREE.RingGeometry(1.6, 1.68, 48), mat(0xf1efe8));
+  kreis.rotation.x = -Math.PI / 2; kreis.position.set(0, 0.006, -1); scene.add(kreis);
+
+  // Schulhaus
+  box(40, 8, 0.6, 0xd9c7a8, 0, 4, -11);
+  box(40, 0.4, 1.2, 0x8f8576, 0, 8.1, -11);
+  for (var r = 0; r < 2; r++) {
+    for (var c = -6; c <= 6; c++) {
+      box(1.6, 1.5, 0.1, 0x3d5a73, c * 3, 2.4 + r * 3, -10.66);
+      box(1.8, 0.12, 0.2, 0xf2efe8, c * 3, 1.6 + r * 3, -10.6);
+    }
+  }
+  box(2.2, 2.6, 0.12, 0x6b3a2a, 0, 1.3, -10.66);
+
+  // Bäume
+  box(0.35, 2.4, 0.35, 0x6e4b2f, -6, 1.2, -4);
+  var krone = new THREE.Mesh(new THREE.IcosahedronGeometry(1.7, 0), mat(0x4f8a4b));
+  krone.position.set(-6, 3.6, -4); krone.castShadow = true; scene.add(krone);
+  box(0.35, 2.4, 0.35, 0x6e4b2f, 9, 1.2, -7);
+  var krone2 = krone.clone(); krone2.position.set(9, 3.6, -7); scene.add(krone2);
+
+  // Bank und Basketballkorb
+  box(2.4, 0.08, 0.5, 0x9a6b3f, 5, 0.48, -3);
+  box(2.4, 0.5, 0.08, 0x9a6b3f, 5, 0.78, -3.24);
+  box(0.08, 0.45, 0.45, 0x3a3a3a, 4, 0.22, -3); box(0.08, 0.45, 0.45, 0x3a3a3a, 6, 0.22, -3);
+  box(0.15, 3.2, 0.15, 0x555a60, -9, 1.6, 2);
+  box(1.2, 0.8, 0.06, 0xf3f3f0, -9, 3.3, 2.1);
+
+  /* ---------- Die Person ---------- */
+  function arm(eltern, seite, farben) {
+    var schulter = new THREE.Group();
+    schulter.position.set(0.29 * seite, 1.42, 0);
+    eltern.add(schulter);
+    box(0.12, 0.3, 0.14, farben.oberteil, 0, -0.15, 0, schulter);
+    var ellbogen = new THREE.Group();
+    ellbogen.position.set(0, -0.3, 0);
+    schulter.add(ellbogen);
+    box(0.11, 0.28, 0.13, farben.oberteil, 0, -0.14, 0, ellbogen);
+    box(0.1, 0.1, 0.1, farben.haut, 0, -0.33, 0, ellbogen);
+    var greif = new THREE.Object3D();
+    greif.position.set(0, -0.36, 0.02);
+    ellbogen.add(greif);
+    return { schulter: schulter, ellbogen: ellbogen, greif: greif };
+  }
+
+  function baueFigur(f) {
+    var g = new THREE.Group();
+    var fa = f.farben;
+    box(0.16, 0.82, 0.18, fa.hose, -0.1, 0.41, 0, g);
+    box(0.16, 0.82, 0.18, fa.hose, 0.1, 0.41, 0, g);
+    box(0.18, 0.08, 0.26, 0x222222, -0.1, 0.04, 0.04, g);
+    box(0.18, 0.08, 0.26, 0x222222, 0.1, 0.04, 0.04, g);
+    box(0.44, 0.62, 0.25, fa.oberteil, 0, 1.13, 0, g);
+    box(0.1, 0.07, 0.1, fa.haut, 0, 1.47, 0, g);
+    box(0.24, 0.28, 0.25, fa.haut, 0, 1.62, 0, g);
+    box(0.05, 0.035, 0.012, 0x1d1d1d, -0.055, 1.65, 0.126, g);
+    box(0.05, 0.035, 0.012, 0x1d1d1d, 0.055, 1.65, 0.126, g);
+    box(0.012, 0.012, 0.013, 0xffffff, -0.045, 1.658, 0.133, g);
+    box(0.012, 0.012, 0.013, 0xffffff, 0.065, 1.658, 0.133, g);
+    box(0.06, 0.014, 0.012, fa.haare, -0.055, 1.685, 0.126, g);
+    box(0.06, 0.014, 0.012, fa.haare, 0.055, 1.685, 0.126, g);
+    box(0.03, 0.05, 0.03, fa.haut, 0, 1.61, 0.135, g);
+    box(0.08, 0.016, 0.012, 0x7a3b33, 0, 1.55, 0.126, g);
+    box(0.26, 0.07, 0.27, fa.haare, 0, 1.775, 0, g);
+    if (f.lang) {
+      box(0.27, 0.42, 0.07, fa.haare, 0, 1.56, -0.12, g);
+      box(0.04, 0.28, 0.2, fa.haare, -0.13, 1.64, -0.02, g);
+      box(0.04, 0.28, 0.2, fa.haare, 0.13, 1.64, -0.02, g);
+    } else {
+      box(0.26, 0.2, 0.06, fa.haare, 0, 1.67, -0.11, g);
+    }
+    var links = arm(g, -1, fa);
+    var rechts = arm(g, 1, fa);
+    scene.add(g);
+    return { g: g, links: links, rechts: rechts };
+  }
+  var figur = baueFigur(FIGUR);
+
+  // Requisiten je nach Aktivität
+  var requisit = {};
+  var tmp = new THREE.Vector3();
+  if (FIGUR.typ === "ball") {
+    var ball = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 14), mat(0xd9692a));
+    ball.castShadow = true; scene.add(ball);
+    var naht = new THREE.Mesh(new THREE.TorusGeometry(0.121, 0.006, 6, 30), mat(0x2a1a12));
+    ball.add(naht);
+    requisit.ball = ball;
+  } else if (FIGUR.typ === "apfel") {
+    var apfel = new THREE.Group();
+    var frucht = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 12), mat(0xb8302b));
+    frucht.castShadow = true; apfel.add(frucht);
+    box(0.008, 0.03, 0.008, 0x5a3b1e, 0, 0.06, 0, apfel);
+    apfel.position.set(0, -0.04, 0.06);
+    figur.rechts.greif.add(apfel);
+    requisit.apfel = apfel;
+  } else if (FIGUR.typ === "giessen") {
+    var kanne = new THREE.Group();
+    var koerper = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 0.17, 16), mat(0x3f8d6b));
+    koerper.position.set(0, -0.04, 0.03); koerper.castShadow = true; kanne.add(koerper);
+    var rohr = box(0.025, 0.025, 0.2, 0x3f8d6b, 0, 0.0, 0.17, kanne);
+    rohr.rotation.x = 0.5;
+    var tuelle = new THREE.Object3D(); tuelle.position.set(0, 0.06, 0.27); kanne.add(tuelle);
+    scene.add(kanne);
+    var topf = box(0.3, 0.3, 0.3, 0xb5643c, 0.3, 0.15, 0.68);
+    var pflanze = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 0), mat(0x4f8a4b));
+    pflanze.position.set(0.3, 0.45, 0.68); pflanze.castShadow = true; scene.add(pflanze);
+    var strahl = new THREE.Mesh(new THREE.BoxGeometry(0.02, 1, 0.02),
+      new THREE.MeshLambertMaterial({ color: 0x7fb6e6, transparent: true, opacity: 0.75 }));
+    scene.add(strahl);
+    requisit.kanne = kanne; requisit.tuelle = tuelle; requisit.strahl = strahl;
+  } else if (FIGUR.typ === "kiste") {
+    box(0.5, 0.8, 0.45, 0x9b9a95, 0.72, 0.4, 0.15);
+    box(0.4, 0.2, 0.3, 0x6b4426, 0.72, 0.9, 0.15);
+    box(0.34, 0.02, 0.24, 0xf2a93b, 0.72, 0.995, 0.15, scene, 0xf2a93b);
+    var deckel = new THREE.Group();
+    deckel.position.set(0.72, 1.0, 0.0);
+    scene.add(deckel);
+    box(0.42, 0.05, 0.32, 0x7d5230, 0, 0.025, 0.15, deckel);
+    box(0.06, 0.04, 0.02, 0xc9a34a, 0, 0.0, 0.31, deckel);
+    requisit.deckel = deckel;
+  }
+
+  function weich(x) { return x * x * (3 - 2 * x); }
+  function lerp(a, b, s) { return a + (b - a) * s; }
+
+  function animiere(t) {
+    var L = figur.links, R = figur.rechts;
+    L.schulter.rotation.x = -0.04 + 0.03 * Math.sin(t * 1.3);
+    L.schulter.rotation.z = -0.05;
+    L.ellbogen.rotation.x = -0.15;
+    if (FIGUR.typ === "ball") {
+      var P = 0.8, p = (t % P) / P;
+      R.schulter.rotation.x = -(0.38 + 0.12 * Math.cos(2 * Math.PI * p));
+      R.schulter.rotation.z = 0;
+      R.ellbogen.rotation.x = -0.7;
+      figur.g.updateMatrixWorld(true);
+      R.greif.getWorldPosition(tmp);
+      var oben = tmp.y - 0.17;
+      requisit.ball.position.set(tmp.x, 0.12 + (oben - 0.12) * Math.abs(Math.cos(Math.PI * p)), tmp.z + 0.02);
+      requisit.ball.rotation.x = t * 3;
+    } else if (FIGUR.typ === "apfel") {
+      var q = t % 4.2, s;
+      if (q < 1) s = weich(q);
+      else if (q < 2) s = 1;
+      else if (q < 3) s = weich(1 - (q - 2));
+      else s = 0;
+      R.schulter.rotation.x = -lerp(0.3, 0.45, s);
+      R.schulter.rotation.z = -lerp(0, 0.38, s);
+      R.ellbogen.rotation.x = -lerp(0.9, 2.45, s);
+    } else if (FIGUR.typ === "giessen") {
+      R.schulter.rotation.x = -0.3;
+      R.schulter.rotation.z = 0.02;
+      R.ellbogen.rotation.x = -0.95;
+      figur.g.updateMatrixWorld(true);
+      R.greif.getWorldPosition(tmp);
+      var kanne2 = requisit.kanne;
+      kanne2.position.copy(tmp);
+      var kipp = 0.05 + 0.6 * Math.max(0, Math.sin(t * 1.1));
+      kanne2.rotation.x = kipp;
+      kanne2.updateMatrixWorld(true);
+      var sp = new THREE.Vector3();
+      requisit.tuelle.getWorldPosition(sp);
+      var st = requisit.strahl;
+      if (kipp > 0.4 && sp.y > 0.42) {
+        var laenge = sp.y - 0.4;
+        st.visible = true;
+        st.scale.y = laenge;
+        st.position.set(sp.x, 0.4 + laenge / 2, sp.z);
+      } else {
+        st.visible = false;
+      }
+    } else if (FIGUR.typ === "kiste") {
+      var k = t % 5.5, o;
+      if (k < 1.2) o = weich(k / 1.2);
+      else if (k < 3.2) o = 1;
+      else if (k < 4.4) o = weich(1 - (k - 3.2) / 1.2);
+      else o = 0;
+      requisit.deckel.rotation.x = -1.15 * o;
+      R.schulter.rotation.z = 0.42;
+      R.schulter.rotation.x = -lerp(0.35, 0.75, o);
+      R.ellbogen.rotation.x = -lerp(0.5, 0.9, o);
+    }
+  }
+
+  function detailPunkt(ziel) {
+    if (FIGUR.typ === "ball") figur.rechts.greif.getWorldPosition(ziel);
+    else if (FIGUR.typ === "apfel") requisit.apfel.getWorldPosition(ziel);
+    else if (FIGUR.typ === "giessen") requisit.kanne.getWorldPosition(ziel);
+    else ziel.set(0.72, 0.95, 0.25);
+    return ziel;
+  }
+
+  /* ---------- Kamera-Rig ---------- */
+  var STARTS = {
+    k1: { x: 0, y: 1.6, z: 26, yaw: 0, pitch: 0 },
+    k2: { x: 0, y: 1.6, z: 4.5, yaw: 0, pitch: 0 },
+    ch: { x: 0, y: 1.6, z: 10, yaw: 0, pitch: 0 }
+  };
+  var rig = { x: 0, y: 1.6, z: 26, yaw: 0, pitch: 0 };
+  var tasten = {};
+  var AUGEN = new THREE.Vector3(0, AUGENHOEHE, 0.13);
+
+  function rigSetzen(s) { rig.x = s.x; rig.y = s.y; rig.z = s.z; rig.yaw = s.yaw; rig.pitch = s.pitch; }
+  function anwenden() {
+    camera.position.set(rig.x, rig.y, rig.z);
+    camera.rotation.y = rig.yaw;
+    camera.rotation.x = rig.pitch;
+  }
+  function groesseAnpassen() {
+    var w = sucher.clientWidth, h = sucher.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", groesseAnpassen);
+
+  var modus = "k1"; // k1, k2, fertig, challenge, challengeFertig
+  function hoeheFrei() { return modus !== "k1"; }
+
+  var start0 = performance.now();
+  var zuletzt = start0;
+  function schritt(jetzt) {
+    var dt = Math.min((jetzt - zuletzt) / 1000, 0.05);
+    zuletzt = jetzt;
+    var abstand = camera.position.distanceTo(AUGEN);
+    var tempo = Math.max(0.15, Math.min(abstand * 0.7, 4));
+    var vorX = -Math.sin(rig.yaw), vorZ = -Math.cos(rig.yaw);
+    var reX = Math.cos(rig.yaw), reZ = -Math.sin(rig.yaw);
+    if (tasten.vor) { rig.x += vorX * tempo * dt; rig.z += vorZ * tempo * dt; }
+    if (tasten.zurueck) { rig.x -= vorX * tempo * dt; rig.z -= vorZ * tempo * dt; }
+    if (tasten.rechts) { rig.x += reX * tempo * dt; rig.z += reZ * tempo * dt; }
+    if (tasten.links) { rig.x -= reX * tempo * dt; rig.z -= reZ * tempo * dt; }
+    if (hoeheFrei()) {
+      var hTempo = Math.min(1.6, Math.max(0.3, tempo));
+      if (tasten.hoch) rig.y += hTempo * dt;
+      if (tasten.runter) rig.y -= hTempo * dt;
+    } else {
+      rig.y = 1.6;
+    }
+    if (tasten.drehL) rig.yaw += 1.0 * dt;
+    if (tasten.drehR) rig.yaw -= 1.0 * dt;
+    if (tasten.neigHoch) rig.pitch += 0.75 * dt;
+    if (tasten.neigRunter) rig.pitch -= 0.75 * dt;
+
+    rig.y = Math.max(0.15, Math.min(rig.y, 9));
+    rig.x = Math.max(-30, Math.min(rig.x, 30));
+    rig.z = Math.max(-10, Math.min(rig.z, 35));
+    var maxN = hoeheFrei() ? 60 : 12, minN = hoeheFrei() ? -80 : -12;
+    rig.pitch = Math.max(minN * Math.PI / 180, Math.min(rig.pitch, maxN * Math.PI / 180));
+    // nicht in die Person hineinfahren
+    var dx = rig.x, dz = rig.z - 0.02, horiz = Math.sqrt(dx * dx + dz * dz);
+    if (rig.y < 1.9 && horiz < 0.17) {
+      var f = 0.17 / (horiz || 0.0001);
+      rig.x = dx * f; rig.z = 0.02 + dz * f;
+      if (horiz === 0) { rig.z = 0.19; }
+    }
+
+    animiere((jetzt - start0) / 1000);
+    anwenden();
+    renderer.render(scene, camera);
+    document.getElementById("w-hoehe").textContent = "Höhe " + rig.y.toFixed(1) + " m";
+    var grad = Math.round(rig.pitch * 180 / Math.PI);
+    document.getElementById("w-neigung").textContent = "Neigung " + (grad > 0 ? "+" : "") + grad + "°";
+    requestAnimationFrame(schritt);
+  }
+
+  /* ---------- Auswertung nach sichtbarem Körperausschnitt ---------- */
+  var vorne = new THREE.Vector3();
+  var pv = new THREE.Vector3();
+  function proj(x, y, z) {
+    pv.set(x, y, z);
+    var d = pv.clone().sub(camera.position).dot(vorne);
+    pv.project(camera);
+    return { x: pv.x, y: pv.y, d: d };
+  }
+  function imRahmen(p, rand) { return p.d > 0.02 && Math.abs(p.x) <= rand && Math.abs(p.y) <= rand; }
+
+  function auswerten() {
+    camera.updateMatrixWorld();
+    vorne.set(0, 0, -1).applyQuaternion(camera.quaternion);
+
+    // senkrechte Linie durch die Person abtasten: wo beginnt und endet das Bild?
+    var unten = null, oben = null;
+    for (var y = -0.2; y <= 2.4; y += 0.01) {
+      var p = proj(0, y, 0.12);
+      if (p.d > 0.02 && Math.abs(p.y) <= 1 && Math.abs(p.x) <= 1) {
+        if (unten === null) unten = y;
+        oben = y;
+      }
+    }
+    var auge = proj(0, AUGENHOEHE, 0.13);
+    var augen = auge.d > 0.02 && Math.abs(auge.x) < 0.85 && Math.abs(auge.y) < 0.95;
+    var F = auge.d > 0 ? 2 * auge.d * TAN : 99;
+
+    var groesse;
+    if (!augen || unten === null) groesse = "ohneKopf";
+    else if (unten <= 0) {
+      if (oben < SCHEITEL + 0.02) groesse = "kopfAb";
+      else {
+        var anteil = SCHEITEL / F;
+        if (anteil < 0.1) groesse = "zuweit";
+        else if (anteil < 0.36) groesse = "totale";
+        else if (anteil <= 0.8) groesse = "halbtotale";
+        else groesse = "halbtotaleEng";
+      }
+    }
+    else if (unten < 0.3) groesse = "unterschenkel";
+    else if (unten < 0.6) groesse = "amerikanisch";
+    else if (unten < 0.75) groesse = "oberschenkel";
+    else if (unten < 1.0) groesse = "halbnah";
+    else if (unten < 1.12) groesse = "bauch";
+    else if (unten < 1.36) groesse = "nah";
+    else if (unten < 1.41) groesse = "schultern";
+    else if (unten < 1.53) groesse = "gross";
+    else groesse = "detail";
+
+    // Detail auch über den Gegenstand der Aktivität
+    var dp = detailPunkt(new THREE.Vector3());
+    var pd = proj(dp.x, dp.y, dp.z);
+    var detailGegenstand = pd.d > 0.02 && Math.abs(pd.x) < 0.75 && Math.abs(pd.y) < 0.75 && 2 * pd.d * TAN < 0.45;
+
+    // Ist die Person überhaupt im Bild? (für Perspektiven)
+    var punkte = [[0, AUGENHOEHE, 0.13], [0, SCHEITEL, 0], [0, 1.1, 0.12], [0, 0.4, 0.1]];
+    var sichtbar = punkte.some(function (q) { return imRahmen(proj(q[0], q[1], q[2]), 0.95); });
+
+    var h = rig.y, n = rig.pitch * 180 / Math.PI, persp;
+    if (h >= 3.2 && n <= -40) persp = "vogel";
+    else if (h <= 0.6 && n >= 15) persp = "frosch";
+    else if (h > 1.95 && n <= -8) persp = "aufsicht";
+    else if (h < 1.35 && n >= 5) persp = "untersicht";
+    else if (Math.abs(h - AUGENHOEHE) <= 0.3 && Math.abs(n) <= 10) persp = "normal";
+    else persp = "unklar";
+
+    return { groesse: groesse, unten: unten, detailGegenstand: detailGegenstand, sichtbar: sichtbar, persp: persp, h: h, n: n };
+  }
+
+  function schnittText(e) {
+    if (e.groesse === "ohneKopf") return e.detailGegenstand ? "Dein Bild: " + FIGUR.detail : "Dein Bild: Das Gesicht ist nicht im Bild";
+    if (e.groesse === "zuweit") return "Dein Bild: Die Person ist winzig";
+    if (e.groesse === "kopfAb") return "Dein Bild: Der Kopf ist oben abgeschnitten";
+    var u = e.unten, teil;
+    if (u <= 0) teil = "Ganze Person von Kopf bis Fuss";
+    else if (u < 0.3) teil = "endet bei den Unterschenkeln";
+    else if (u < 0.6) teil = "endet bei den Knien";
+    else if (u < 0.75) teil = "endet bei den Oberschenkeln";
+    else if (u < 1.0) teil = "endet bei der Hüfte";
+    else if (u < 1.12) teil = "endet beim Bauch";
+    else if (u < 1.36) teil = "endet bei der Brust";
+    else if (u < 1.41) teil = "endet bei den Schultern";
+    else if (u < 1.53) teil = "endet beim Hals";
+    else teil = "zeigt nur noch einen Teil des Gesichts";
+    var erkannt = NAMEN[e.groesse] ? " · erkannt: " + NAMEN[e.groesse] : " · zwischen zwei Einstellungen";
+    return (u <= 0 ? "Dein Bild: " : "Dein Bild ") + teil + erkannt;
+  }
+
+  function tippGroesse(e, a) {
+    var ist = e.groesse, ziel = a.id;
+    if (ist === "ohneKopf") {
+      return ziel === "detail"
+        ? "Richte die Kamera auf " + FIGUR.detail + " oder auf die Augen."
+        : "Das Gesicht der Person ist nicht im Bild. Richte die Kamera auf ihren Kopf.";
+    }
+    if (ist === "kopfAb") return "Der Kopf ist abgeschnitten. Neige die Kamera etwas nach oben.";
+    if (ist === "halbtotaleEng" && ziel === "halbtotale") return "Fast! Die ganze Person ist im Bild, aber es fehlt Umgebung. Fahr ein Stück zurück.";
+    var diff = STUFE[ziel] - STUFE[ist];
+    var satz;
+    if (diff > 0) satz = diff > 1 ? "Noch deutlich zu weit weg. Fahr näher heran." : "Fast. Fahr noch ein kleines Stück näher heran.";
+    else satz = diff < -1 ? "Viel zu nah. Fahr ein gutes Stück zurück." : "Fast. Fahr ein kleines Stück zurück.";
+    return satz + " " + a.ziel;
+  }
+  function tippPersp(e, ziel) {
+    if (ziel === "normal") {
+      if (Math.abs(e.h - AUGENHOEHE) > 0.3) return "Bring die Kamera auf Augenhöhe, etwa 1.4 bis 1.9 m.";
+      return "Richte die Kamera gerade aus, nicht nach oben oder unten.";
+    }
+    if (ziel === "frosch") {
+      if (e.h > 0.6) return "Die Kamera ist zu hoch. Geh fast bis auf den Boden, unter 60 cm.";
+      return "Neige die Kamera stärker nach oben zur Person.";
+    }
+    if (ziel === "untersicht") {
+      if (e.persp === "frosch") return "Das ist schon eine Froschperspektive. Für die Untersicht etwas höher.";
+      if (e.h >= 1.35) return "Die Kamera muss tiefer sein als die Augen der Person.";
+      return "Neige die Kamera leicht nach oben.";
+    }
+    if (ziel === "aufsicht") {
+      if (e.persp === "vogel") return "Das ist schon eine Vogelperspektive. Für die Aufsicht etwas tiefer oder weniger steil.";
+      if (e.h <= 1.95) return "Die Kamera muss höher sein als der Kopf der Person.";
+      return "Neige die Kamera nach unten zur Person.";
+    }
+    if (ziel === "vogel") {
+      if (e.h < 3.2) return "Steig noch höher hinauf, mindestens auf 3.2 m.";
+      return "Neige die Kamera steil nach unten.";
+    }
+    return "Versuch es nochmals.";
+  }
+
+  function pruefen(e, a) {
+    if (a.typ === "groesse") {
+      var ok = a.id === "detail" ? (e.groesse === "detail" || e.detailGegenstand) : e.groesse === a.id;
+      var artikel = a.id === "detail" ? "ein " : "eine ";
+      return { ok: ok, meldung: ok ? "Gut gemacht! Das ist " + artikel + a.titel + "." : tippGroesse(e, a), war: schnittText(e) };
+    }
+    if (!e.sichtbar) return { ok: false, meldung: "Die Person ist nicht im Bild. Richte die Kamera auf sie.", war: "Dein Bild: Person nicht im Bild" };
+    var ok2 = e.persp === a.id;
+    return {
+      ok: ok2,
+      meldung: ok2 ? "Gut gemacht! Das ist die " + a.titel + "." : tippPersp(e, a.id),
+      war: "Höhe " + e.h.toFixed(1) + " m, Neigung " + Math.round(e.n) + "° · erkannt: " + NAMEN[e.persp]
+    };
+  }
+
+  /* ---------- Spielablauf ---------- */
+  var idx = 0;
+  var album = [];
+  var challenge = { liste: [], idx: 0, punkte: 0, versuche: 0, ergebnis: [] };
+  var sperre = false; // während Wirkungsfrage oder Übergang
+
+  var el = function (id) { return document.getElementById(id); };
+  var elNr = el("auftragnr"), elTitel = el("auftragtitel"), elText = el("auftragtext");
+  var elRueck = el("rueckmeldung"), elWar = el("bildwar"), elFort = el("fortschritt");
+  var elAusl = el("ausloeser"), elPunkte = el("punkte");
+
+  el("figurZeile").innerHTML = "";
+  (function () {
+    var z = el("figurZeile");
+    z.append("Vor deiner Kamera: ");
+    var b = document.createElement("b"); b.textContent = FIGUR.name; z.appendChild(b);
+    z.append(" " + FIGUR.aktion + ".");
+  })();
+
+  function aktuellerAuftrag() {
+    if (modus === "challenge") return challenge.liste[challenge.idx];
+    return AUFTRAEGE[idx];
+  }
+
+  function steuerungAnpassen() {
+    var frei = hoeheFrei();
+    el("g-hoehe").classList.toggle("gesperrt", !frei);
+    el("hoeheSchloss").hidden = frei;
+    el("neigenSchloss").hidden = frei;
+    el("g-hoehe").querySelectorAll("button").forEach(function (b) { b.disabled = !frei; });
+    el("kapBadge").textContent = modus === "k1" ? "KAPITEL 1 · WIE NAH?" : modus === "k2" ? "KAPITEL 2 · VON WO?" : modus === "challenge" ? "CHALLENGE" : "FREIE KAMERA";
+  }
+
+  function fortschrittZeichnen() {
+    elFort.innerHTML = "";
+    if (modus === "challenge" || modus === "challengeFertig") {
+      challenge.liste.forEach(function (_, i) {
+        var s = document.createElement("span");
+        if (i < challenge.ergebnis.length) s.className = challenge.ergebnis[i] ? "fertig" : "daneben";
+        else if (i === challenge.idx && modus === "challenge") s.className = "jetzt";
+        elFort.appendChild(s);
+      });
+      return;
+    }
+    AUFTRAEGE.forEach(function (_, i) {
+      if (i === ANZAHL_K1) { var cut = document.createElement("span"); cut.className = "schnitt"; elFort.appendChild(cut); }
+      var s = document.createElement("span");
+      if (i < idx) s.className = "fertig";
+      else if (i === idx && modus !== "fertig") s.className = "jetzt";
+      elFort.appendChild(s);
+    });
+  }
+
+  function anzeigen() {
+    fortschrittZeichnen();
+    steuerungAnpassen();
+    el("frage").hidden = true;
+    el("zeileEnde").hidden = true;
+    el("neueChallenge").hidden = true;
+    el("zeileKnoepfe").hidden = false;
+    el("skip").hidden = modus !== "challenge";
+    elAusl.hidden = false;
+    elAusl.disabled = false;
+    elAusl.textContent = "Auslösen";
+    elPunkte.hidden = modus !== "challenge";
+
+    if (modus === "fertig") {
+      elNr.textContent = "ALLE 12 AUFTRÄGE ERFÜLLT";
+      elTitel.textContent = "Kameraschule bestanden";
+      elText.textContent = "Öffne dein Album, lade die Bilder herunter und schalte damit die Challenge frei.";
+      elAusl.hidden = true;
+      el("zeileEnde").hidden = false;
+      return;
+    }
+    if (modus === "challengeFertig") {
+      var max = challenge.liste.length;
+      elNr.textContent = "CHALLENGE BEENDET";
+      elTitel.textContent = challenge.punkte + " von " + max + " Punkten";
+      var lob = challenge.punkte === max ? "Perfekt! Jede Einstellung sass beim ersten Versuch."
+        : challenge.punkte >= max - 2 ? "Stark! Du kennst dich mit der Kamera schon gut aus."
+        : "Gut geübt. Mit einer neuen Challenge holst du sicher mehr Punkte.";
+      var best = bestwert(challenge.punkte);
+      elText.textContent = lob + (best !== null ? " Dein Bestwert: " + best + " von " + max + "." : "");
+      elAusl.hidden = true;
+      elPunkte.hidden = true;
+      el("zeileKnoepfe").hidden = true;
+      el("zeileEnde").hidden = false;
+      el("neueChallenge").hidden = false;
+      return;
+    }
+
+    var a = aktuellerAuftrag();
+    if (modus === "challenge") {
+      elNr.textContent = "CHALLENGE " + (challenge.idx + 1) + " VON " + challenge.liste.length + (a.typ === "persp" ? " · PERSPEKTIVE" : " · EINSTELLUNGSGRÖSSE");
+      elText.textContent = "Finde die Einstellung selbst. Einen Punkt gibt es nur, wenn das erste Foto sitzt.";
+      elPunkte.innerHTML = "";
+      var b = document.createElement("b"); b.textContent = challenge.punkte;
+      elPunkte.append("Punkte: "); elPunkte.appendChild(b); elPunkte.append(" von " + challenge.liste.length);
+    } else {
+      elNr.textContent = "AUFTRAG " + a.nr + " VON " + AUFTRAEGE.length + (a.typ === "persp" ? " · PERSPEKTIVE" : " · EINSTELLUNGSGRÖSSE");
+      elText.textContent = a.text;
+    }
+    elTitel.textContent = a.titel;
+  }
+
+  function blitz() {
+    var b = el("blitz");
+    b.classList.add("an");
+    requestAnimationFrame(function () { requestAnimationFrame(function () { b.classList.remove("an"); }); });
+  }
+
+  function fotoSpeichern(a) {
+    var png = renderer.domElement.toDataURL("image/png");
+    var eintrag = { auftrag: a, png: png };
+    album.push(eintrag);
+    var fig = document.createElement("figure");
+    var img = document.createElement("img");
+    img.src = png; img.alt = a.titel;
+    var cap = document.createElement("figcaption");
+    cap.textContent = a.datei.replace(".png", "");
+    fig.appendChild(img); fig.appendChild(cap);
+    el("album").appendChild(fig);
+    el("albumleer").hidden = true;
+  }
+
+  function ausloesen() {
+    if (sperre || vorhangOffen()) return;
+    if (modus === "fertig" || modus === "challengeFertig") return;
+    animiere((performance.now() - start0) / 1000);
+    anwenden();
+    renderer.render(scene, camera);
+    var a = aktuellerAuftrag();
+    var e = auswerten();
+    var res = pruefen(e, a);
+    blitz();
+    elWar.textContent = res.war;
+    elRueck.textContent = res.meldung;
+    elRueck.className = "rueckmeldung " + (res.ok ? "gut" : "fehler");
+
+    if (modus === "challenge") {
+      challenge.versuche++;
+      if (res.ok) {
+        var punkt = challenge.versuche === 1;
+        if (punkt) challenge.punkte++;
+        elRueck.textContent = punkt ? "Beim ersten Versuch! Plus ein Punkt." : "Richtig, aber nicht beim ersten Versuch. Kein Punkt.";
+        challenge.ergebnis.push(punkt);
+        sperre = true;
+        setTimeout(function () { sperre = false; challengeWeiter(); }, 1000);
+      }
+      return;
+    }
+
+    if (!res.ok) return;
+    fotoSpeichern(a);
+    if (a.wirkung) {
+      sperre = true;
+      wirkungsfrage(a.wirkung);
+      return;
+    }
+    sperre = true;
+    setTimeout(function () { sperre = false; weiter(); }, 900);
+  }
+
+  function weiter() {
+    idx++;
+    if (idx === ANZAHL_K1) {
+      modus = "k2";
+      rigSetzen(STARTS.k2);
+      kapitelZeigen(2);
+    } else if (idx >= AUFTRAEGE.length) {
+      modus = "fertig";
+      anzeigen();
+      endeOeffnen();
+      return;
+    }
+    elRueck.className = "rueckmeldung";
+    elRueck.textContent = idx === ANZAHL_K1 ? "Neues Kapitel: Jetzt darfst du die Höhe verändern." : "Weiter geht's. Bewege die Kamera für den nächsten Auftrag.";
+    elWar.textContent = "";
+    anzeigen();
+  }
+
+  function wirkungsfrage(w) {
+    elAusl.hidden = true;
+    var box2 = el("frage");
+    box2.hidden = false;
+    el("frageText").textContent = w.frage;
+    var ant = el("antworten");
+    ant.innerHTML = "";
+    el("frageRueck").hidden = true;
+    el("frageWeiter").hidden = true;
+    w.antworten.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = o.t;
+      b.addEventListener("click", function () {
+        ant.querySelectorAll("button").forEach(function (x, i) {
+          x.disabled = true;
+          if (w.antworten[i].ok) x.classList.add("richtig");
+        });
+        if (!o.ok) b.classList.add("falsch");
+        var r = el("frageRueck");
+        r.hidden = false;
+        r.className = "rueckmeldung " + (o.ok ? "gut" : "fehler");
+        r.textContent = (o.ok ? "Genau. " : "Nicht ganz. ") + w.erkl;
+        el("frageWeiter").hidden = false;
+        el("frageWeiter").focus();
+      });
+      ant.appendChild(b);
+    });
+  }
+  el("frageWeiter").addEventListener("click", function () {
+    sperre = false;
+    el("frage").hidden = true;
+    weiter();
+  });
+
+  /* ---------- Kapitelklappe ---------- */
+  var KAPITEL = {
+    1: { nr: "KAPITEL 1", szene: "SZENE 1", take: "TAKE 1", titel: "Einstellungsgrössen", merk: "Wie nah bin ich?",
+      text: "Du fährst mit der Kamera näher an die Person heran oder weiter weg. Die Höhe bleibt dabei auf Augenhöhe. Sieben Aufträge, von weit weg bis ganz nah.",
+      aktiv: "vglGroesse" },
+    2: { nr: "KAPITEL 2", szene: "SZENE 2", take: "TAKE 1", titel: "Perspektiven", merk: "Von wo schaue ich?",
+      text: "Schnitt! Jetzt geht es nicht mehr um den Abstand. Du veränderst die Höhe der Kamera und neigst sie nach oben oder unten. Fünf Aufträge, vom Boden bis hoch in die Luft.",
+      aktiv: "vglPersp" }
+  };
+  function vorhangOffen() { return !el("kapitel").hidden || !el("ende").hidden; }
+  function kapitelZeigen(n) {
+    var k = KAPITEL[n];
+    el("kapNr").textContent = k.nr;
+    el("kapSzene").textContent = k.szene;
+    el("kapTake").textContent = k.take;
+    el("kapTitel").textContent = k.titel;
+    el("kapMerk").textContent = k.merk;
+    el("kapText").textContent = k.text;
+    el("vglGroesse").classList.toggle("aktiv", k.aktiv === "vglGroesse");
+    el("vglPersp").classList.toggle("aktiv", k.aktiv === "vglPersp");
+    var fi = el("kapFigur");
+    fi.innerHTML = "";
+    fi.append("Vor deiner Kamera steht ");
+    var b = document.createElement("b"); b.textContent = FIGUR.name; fi.appendChild(b);
+    fi.append(". " + (FIGUR.name === "Lena" || FIGUR.name === "Elif" ? "Sie " : "Er ") + FIGUR.aktion + ".");
+    el("klappe").classList.remove("zu");
+    tasten = {};
+    el("kapitel").hidden = false;
+    setTimeout(function () { el("kapLos").focus(); }, 30);
+  }
+  el("kapLos").addEventListener("click", function () {
+    var reduziert = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el("klappe").classList.add("zu");
+    setTimeout(function () { el("kapitel").hidden = true; elAusl.focus(); }, reduziert ? 0 : 420);
+  });
+
+  /* ---------- Abschluss: Kontaktabzug und Download ---------- */
+  var downloads = null;
+  var downloadsBereit = (window.claude && typeof window.claude.use === "function")
+    ? window.claude.use("downloads").then(function (ns) { downloads = ns; return ns; }, function () { return null; })
+    : Promise.resolve(null);
+  var challengeOffen = false;
+
+  function bildLaden(src) {
+    return new Promise(function (ok) {
+      var i = new Image();
+      i.onload = function () { ok(i); };
+      i.onerror = function () { ok(null); };
+      i.src = src;
+    });
+  }
+
+  function kontaktabzugZeichnen() {
+    var spalten = 4, zeilen = 3;
+    var tw = 400, th = 225, luecke = 28, rand = 48, kopf = 150, beschr = 40;
+    var W = rand * 2 + spalten * tw + (spalten - 1) * luecke;
+    var H = kopf + zeilen * (th + beschr) + (zeilen - 1) * luecke + rand;
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    var g = cv.getContext("2d");
+    g.fillStyle = "#121214"; g.fillRect(0, 0, W, H);
+    // Filmlochung oben und unten
+    g.fillStyle = "#2a2b30";
+    for (var x = 24; x < W - 24; x += 46) { g.fillRect(x, 14, 24, 16); g.fillRect(x, H - 30, 24, 16); }
+    g.fillStyle = "#f2a93b";
+    g.font = "800 54px 'Big Shoulders Display', 'Arial Narrow', sans-serif";
+    g.textBaseline = "alphabetic";
+    g.fillText("KAMERASCHULE", rand, 104);
+    g.fillStyle = "#ece9e3";
+    g.font = "500 22px 'JetBrains Mono', Consolas, monospace";
+    var name = (el("name").value || "").trim();
+    var datum = new Date().toLocaleDateString("de-CH");
+    var info = "KONTAKTABZUG" + (name ? "  ·  " + name.toUpperCase() : "") + "  ·  " + datum + "  ·  MOTIV: " + FIGUR.name.toUpperCase();
+    g.fillText(info, rand + 360, 100);
+    return Promise.all(album.map(function (e) { return bildLaden(e.png); })).then(function (bilder) {
+      bilder.forEach(function (img, i) {
+        var sp = i % spalten, ze = Math.floor(i / spalten);
+        var x0 = rand + sp * (tw + luecke), y0 = kopf + ze * (th + beschr + luecke);
+        g.fillStyle = "#000"; g.fillRect(x0 - 2, y0 - 2, tw + 4, th + 4);
+        if (img) {
+          var s = Math.max(tw / img.width, th / img.height);
+          var sw = tw / s, sh = th / s;
+          g.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, x0, y0, tw, th);
+        }
+        var a = album[i].auftrag;
+        g.fillStyle = "#f2a93b";
+        g.font = "500 20px 'JetBrains Mono', Consolas, monospace";
+        g.fillText((a.nr < 10 ? "0" : "") + a.nr, x0, y0 + th + 28);
+        g.fillStyle = "#ece9e3";
+        g.font = "700 22px 'Atkinson Hyperlegible', 'Segoe UI', sans-serif";
+        g.fillText(a.titel, x0 + 40, y0 + th + 28);
+      });
+      return cv;
+    });
+  }
+
+  function canvasZuBlob(cv) {
+    return new Promise(function (ok) { cv.toBlob(function (b) { ok(b); }, "image/png"); });
+  }
+  function base64Teil(dataUrl) { return dataUrl.slice(dataUrl.indexOf(",") + 1); }
+  function base64ZuBytes(b64) {
+    var bin = atob(b64), n = bin.length, u = new Uint8Array(n);
+    for (var i = 0; i < n; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  function namensTeil() {
+    var n = (el("name").value || "").trim().replace(/[^A-Za-zÄÖÜäöüÉÈéèàçÇ0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return n ? "_" + n : "";
+  }
+
+  var kontaktCanvas = null;
+  var vorschauTimer = null;
+  function vorschauAktualisieren() {
+    return kontaktabzugZeichnen().then(function (cv) {
+      kontaktCanvas = cv;
+      el("kontaktVorschau").src = cv.toDataURL("image/jpeg", 0.8);
+      return cv;
+    });
+  }
+  el("name").addEventListener("input", function () {
+    clearTimeout(vorschauTimer);
+    vorschauTimer = setTimeout(vorschauAktualisieren, 350);
+  });
+
+  function status(text, art) {
+    var s = el("dlStatus");
+    s.textContent = text;
+    s.className = "status" + (art ? " " + art : "");
+  }
+
+  function challengeFreischalten(text) {
+    if (challengeOffen) return;
+    challengeOffen = true;
+    el("tuer").classList.add("offen");
+    el("tuerText").textContent = text || "Freigeschaltet! Sechs zufällige Aufträge, gemischt. Punkte gibt es nur für Fotos, die beim ersten Versuch sitzen.";
+    el("challengeStart").hidden = false;
+  }
+
+  var imClaude = !!(window.claude && typeof window.claude.use === "function");
+  function direktSpeichern(dateiname, daten) {
+    var typ = /\.zip$/i.test(dateiname) ? "application/zip" : "image/png";
+    var blob = daten instanceof Blob ? daten : new Blob([daten], { type: typ });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = dateiname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+  }
+
+  function speichern(dateiname, daten) {
+    if (!imClaude) {
+      try {
+        direktSpeichern(dateiname, daten);
+        status("Gespeichert: " + dateiname + " (im Download-Ordner)", "gut");
+        challengeFreischalten();
+        return Promise.resolve(true);
+      } catch (e) {
+        status("Herunterladen hat nicht geklappt. Versuche es nochmals.", "fehler");
+        return Promise.resolve(false);
+      }
+    }
+    return downloadsBereit.then(function (dl) {
+      if (!dl) {
+        status("Herunterladen ist in dieser Ansicht nicht möglich. Die Challenge ist trotzdem offen.", "fehler");
+        challengeFreischalten();
+        return false;
+      }
+      status("Bestätige den Download im Fenster, das jetzt erscheint.");
+      return dl.save({ filename: dateiname, data: daten }).then(function () {
+        status("Gespeichert: " + dateiname, "gut");
+        challengeFreischalten();
+        return true;
+      }, function (err) {
+        var code = err && err.code;
+        if (code === "declined") status("Download abgebrochen. Du kannst es jederzeit nochmals versuchen.", "fehler");
+        else if (code === "rate_limited") status("Ein Download-Fenster ist schon offen. Warte kurz und versuche es dann nochmals.", "fehler");
+        else if (code === "too_large") status("Die Datei ist zu gross. Lade die Bilder einzeln herunter.", "fehler");
+        else {
+          status("Herunterladen ist hier gerade nicht möglich. Die Challenge ist trotzdem offen.", "fehler");
+          challengeFreischalten();
+        }
+        return false;
+      });
+    });
+  }
+
+  el("dlZip").addEventListener("click", function () {
+    var btn = this;
+    if (typeof JSZip === "undefined") { status("Das ZIP-Werkzeug konnte nicht geladen werden. Lade die Bilder einzeln herunter.", "fehler"); return; }
+    btn.disabled = true;
+    status("Album wird gepackt …");
+    vorschauAktualisieren().then(canvasZuBlob).then(function (kBlob) {
+      var zip = new JSZip();
+      zip.file("00_Kontaktabzug.png", kBlob);
+      album.forEach(function (e) { zip.file(e.auftrag.datei, base64Teil(e.png), { base64: true }); });
+      return zip.generateAsync({ type: "blob" });
+    }).then(function (blob) {
+      return speichern("Kameraschule_Album" + namensTeil() + ".zip", blob);
+    }).then(function () { btn.disabled = false; }, function () {
+      btn.disabled = false;
+      status("Beim Packen ist etwas schiefgelaufen. Versuche es nochmals.", "fehler");
+    });
+  });
+  el("dlKontakt").addEventListener("click", function () {
+    var btn = this;
+    btn.disabled = true;
+    vorschauAktualisieren().then(canvasZuBlob).then(function (b) {
+      return speichern("00_Kontaktabzug" + namensTeil() + ".png", b);
+    }).then(function () { btn.disabled = false; }, function () { btn.disabled = false; });
+  });
+
+  function einzelbilderAufbauen() {
+    var wrap = el("einzeln");
+    wrap.innerHTML = "";
+    album.forEach(function (e) {
+      var b = document.createElement("button");
+      b.type = "button";
+      var img = document.createElement("img");
+      img.src = e.png; img.alt = "";
+      var t = document.createElement("span");
+      t.textContent = e.auftrag.datei;
+      b.appendChild(img); b.appendChild(t);
+      b.setAttribute("aria-label", e.auftrag.datei + " herunterladen");
+      b.addEventListener("click", function () {
+        speichern(e.auftrag.datei, base64ZuBytes(base64Teil(e.png)));
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function endeOeffnen() {
+    tasten = {};
+    einzelbilderAufbauen();
+    el("ende").hidden = false;
+    vorschauAktualisieren();
+    downloadsBereit.then(function (dl) {
+      if (!dl && imClaude) {
+        el("dlZip").disabled = true;
+        el("dlKontakt").disabled = true;
+        status("Herunterladen ist in dieser Ansicht nicht möglich. Öffne die Seite direkt in claude.ai, um dein Album zu speichern.", "fehler");
+        challengeFreischalten("Freigeschaltet. Sechs zufällige Aufträge, gemischt. Punkte gibt es nur für Fotos, die beim ersten Versuch sitzen.");
+      }
+    });
+    setTimeout(function () { el("name").focus(); }, 30);
+  }
+  el("endeZu").addEventListener("click", function () { el("ende").hidden = true; });
+  el("albumOeffnen").addEventListener("click", endeOeffnen);
+
+  /* ---------- Challenge ---------- */
+  function mischen(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function bestwert(p) {
+    var best = null;
+    try {
+      var alt = parseInt(localStorage.getItem("kameraschule-bestwert") || "", 10);
+      best = isNaN(alt) ? p : Math.max(alt, p);
+      localStorage.setItem("kameraschule-bestwert", String(best));
+    } catch (e) { best = null; }
+    return best;
+  }
+  function challengeStarten() {
+    var groessen = mischen(AUFTRAEGE.slice(0, ANZAHL_K1)).slice(0, 3);
+    var persp = mischen(AUFTRAEGE.slice(ANZAHL_K1)).slice(0, 3);
+    challenge = { liste: mischen(groessen.concat(persp)), idx: 0, punkte: 0, versuche: 0, ergebnis: [] };
+    modus = "challenge";
+    rigSetzen(STARTS.ch);
+    el("ende").hidden = true;
+    elRueck.className = "rueckmeldung";
+    elRueck.textContent = "Alle Steuerungen sind frei. Überlege dir zuerst, wohin die Kamera muss, und löse dann aus.";
+    elWar.textContent = "";
+    anzeigen();
+    elAusl.focus();
+  }
+  function challengeWeiter() {
+    challenge.idx++;
+    challenge.versuche = 0;
+    if (challenge.idx >= challenge.liste.length) modus = "challengeFertig";
+    anzeigen();
+  }
+  el("challengeStart").addEventListener("click", challengeStarten);
+  el("neueChallenge").addEventListener("click", challengeStarten);
+  el("skip").addEventListener("click", function () {
+    if (modus !== "challenge" || sperre) return;
+    challenge.ergebnis.push(false);
+    elRueck.className = "rueckmeldung";
+    elRueck.textContent = "Übersprungen. Kein Punkt für diesen Auftrag.";
+    elWar.textContent = "";
+    challengeWeiter();
+  });
+
+  /* ---------- Eingabe ---------- */
+  var TASTEN = {
+    KeyW: "vor", KeyS: "zurueck", KeyA: "links", KeyD: "rechts",
+    KeyE: "hoch", KeyQ: "runter",
+    ArrowLeft: "drehL", ArrowRight: "drehR", ArrowUp: "neigHoch", ArrowDown: "neigRunter"
+  };
+  function inEingabe(ev) { var t = ev.target; return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA"); }
+  window.addEventListener("keydown", function (ev) {
+    if (vorhangOffen() || inEingabe(ev)) return;
+    if (ev.code === "Space") { ev.preventDefault(); if (!ev.repeat) ausloesen(); return; }
+    var k = TASTEN[ev.code];
+    if (k) { ev.preventDefault(); tasten[k] = true; }
+  });
+  window.addEventListener("keyup", function (ev) {
+    var k = TASTEN[ev.code];
+    if (k) tasten[k] = false;
+  });
+  window.addEventListener("blur", function () { tasten = {}; });
+
+  document.querySelectorAll("[data-key]").forEach(function (btn) {
+    var k = btn.getAttribute("data-key");
+    function an(ev) { if (btn.disabled) return; ev.preventDefault(); tasten[k] = true; btn.classList.add("gedrueckt"); try { btn.setPointerCapture(ev.pointerId); } catch (e) {} }
+    function aus() { tasten[k] = false; btn.classList.remove("gedrueckt"); }
+    btn.addEventListener("pointerdown", an);
+    btn.addEventListener("pointerup", aus);
+    btn.addEventListener("pointercancel", aus);
+    btn.addEventListener("lostpointercapture", aus);
+  });
+
+  elAusl.addEventListener("click", ausloesen);
+  el("reset").addEventListener("click", function () {
+    rigSetzen(modus === "k1" ? STARTS.k1 : modus === "k2" ? STARTS.k2 : STARTS.ch);
+  });
+
+  rigSetzen(STARTS.k1);
+  groesseAnpassen();
+  anwenden();
+  anzeigen();
+  kapitelZeigen(1);
+  requestAnimationFrame(schritt);
+})();
+</script>
+
+</body>
+</html>
